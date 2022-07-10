@@ -13,7 +13,7 @@ public class CanalAdapterProperties {
     private String connector;
     private Integer batchSize;
     private CanalServerProperties server;
-    private ThreadPoolProperties threadPool;
+    private CanalThreadPoolProperties threadPool;
 
     public Boolean getEnable() {
         return enable;
@@ -47,11 +47,11 @@ public class CanalAdapterProperties {
         this.server = server;
     }
 
-    public ThreadPoolProperties getThreadPool() {
+    public CanalThreadPoolProperties getThreadPool() {
         return threadPool;
     }
 
-    public void setThreadPool(ThreadPoolProperties threadPool) {
+    public void setThreadPool(CanalThreadPoolProperties threadPool) {
         this.threadPool = threadPool;
     }
 }

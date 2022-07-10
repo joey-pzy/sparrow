@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = ThreadPoolProperties.PREFIX)
-public class ThreadPoolProperties {
+@ConfigurationProperties(prefix = CanalThreadPoolProperties.PREFIX)
+public class CanalThreadPoolProperties {
 
     public static final String PREFIX = CanalAdapterProperties.PREFIX + ".thread-pool";
 

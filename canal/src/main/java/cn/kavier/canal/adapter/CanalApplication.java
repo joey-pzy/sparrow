@@ -1,4 +1,4 @@
-package cn.kavier.canal;
+package cn.kavier.canal.adapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

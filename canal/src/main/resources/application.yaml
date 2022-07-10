@@ -1,1 +1,41 @@
 
+
+# canal相关配置
+canal:
+  adapter:
+    # 是否启用 adapter
+    enable: true
+    connector: simple
+    batch-size: 1000
+    # todo 数据库相关配置，扩展增加这个配置处理，让adapter可以根据数据库创建instance，然后去消费这个instance
+    # srcDataSource:
+    server:
+      host: 106.55.100.113
+      port: 11111
+      username: canal
+      password: canal
+      # canal server instance
+      destination: sparrow
+    thread-pool:
+      # 是否使用线程池处理
+      enable: true
+      # 线程池的最大线程数量（最好=cpu核心数）
+      maxSize: 4
+    filter-map:
+      1:
+        table: tb_person,tb_yyy
+        index: xxx
+        tableProfixEnable: true
+        tableProfit: tb
+        filter: xxx.java
+      2:
+        table:
+
+# 动态代理配置，需要配置映射
+
+
+
+
+
+
+# es相关配置
