@@ -4,10 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = CanalThreadPoolProperties.PREFIX)
-public class CanalThreadPoolProperties {
+@ConfigurationProperties(prefix = AdapterThreadPoolConfig.PREFIX)
+public class AdapterThreadPoolConfig {
 
-    public static final String PREFIX = CanalAdapterProperties.PREFIX + ".thread-pool";
+    public static final String PREFIX = CanalAdapterConfig.PREFIX + ".thread-pool";
 
     private Boolean enable = false;
     private Integer maxSize = 1;

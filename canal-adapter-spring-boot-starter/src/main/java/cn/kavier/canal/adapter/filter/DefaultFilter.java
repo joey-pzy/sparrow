@@ -3,14 +3,12 @@ package cn.kavier.canal.adapter.filter;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class CommonFilter extends AbstractFilter {
+public class DefaultFilter extends AbstractFilter {
 
     @Override
-    public void beforeProcess(List<CanalEntry.Entry> entrys) {
-        super.beforeProcess(entrys);
+    public void beforeProcess(CanalEntry.Entry entry) {
+        super.beforeProcess(entry);
     }
 
     @Override

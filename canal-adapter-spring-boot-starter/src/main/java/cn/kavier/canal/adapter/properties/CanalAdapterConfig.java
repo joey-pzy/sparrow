@@ -4,16 +4,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = CanalAdapterProperties.PREFIX)
-public class CanalAdapterProperties {
+@ConfigurationProperties(prefix = CanalAdapterConfig.PREFIX)
+public class CanalAdapterConfig {
 
     public static final String PREFIX = "canal.adapter";
 
     private Boolean enable;
     private String connector;
+    private String subscribe;
     private Integer batchSize;
-    private CanalServerProperties server;
-    private CanalThreadPoolProperties threadPool;
+    private CanalServerConfig server;
+    private AdapterThreadPoolConfig threadPool;
+    private CanalAdaptersConfig adapters;
 
     public Boolean getEnable() {
         return enable;
@@ -31,6 +33,14 @@ public class CanalAdapterProperties {
         this.connector = connector;
     }
 
+    public String getSubscribe() {
+        return subscribe;
+    }
+
+    public void setSubscribe(String subscribe) {
+        this.subscribe = subscribe;
+    }
+
     public Integer getBatchSize() {
         return batchSize;
     }
@@ -39,19 +49,27 @@ public class CanalAdapterProperties {
         this.batchSize = batchSize;
     }
 
-    public CanalServerProperties getServer() {
+    public CanalServerConfig getServer() {
         return server;
     }
 
-    public void setServer(CanalServerProperties server) {
+    public void setServer(CanalServerConfig server) {
         this.server = server;
     }
 
-    public CanalThreadPoolProperties getThreadPool() {
+    public AdapterThreadPoolConfig getThreadPool() {
         return threadPool;
     }
 
-    public void setThreadPool(CanalThreadPoolProperties threadPool) {
+    public void setThreadPool(AdapterThreadPoolConfig threadPool) {
         this.threadPool = threadPool;
+    }
+
+    public CanalAdaptersConfig getAdapters() {
+        return adapters;
+    }
+
+    public void setAdapters(CanalAdaptersConfig adapters) {
+        this.adapters = adapters;
     }
 }

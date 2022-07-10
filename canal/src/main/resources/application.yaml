@@ -1,4 +1,6 @@
-
+logging:
+  level:
+    cn.kavier.canal.adapter: debug
 
 # canal相关配置
 canal:
@@ -6,6 +8,7 @@ canal:
     # 是否启用 adapter
     enable: true
     connector: simple
+    subscribe: canal\..*
     batch-size: 1000
     # todo 数据库相关配置，扩展增加这个配置处理，让adapter可以根据数据库创建instance，然后去消费这个instance
     # srcDataSource:
@@ -18,18 +21,15 @@ canal:
       destination: sparrow
     thread-pool:
       # 是否使用线程池处理
-      enable: true
+      enable: false
       # 线程池的最大线程数量（最好=cpu核心数）
       maxSize: 4
-    filter-map:
-      1:
-        table: tb_person,tb_yyy
-        index: xxx
-        tableProfixEnable: true
-        tableProfit: tb
-        filter: xxx.java
-      2:
-        table:
+    adapters:
+      filters:
+      - key: xx
+        table-name: tb_xx
+        filter:
+        es-index-name: xx
 
 # 动态代理配置，需要配置映射
 
@@ -39,3 +39,4 @@ canal:
 
 
 # es相关配置
+

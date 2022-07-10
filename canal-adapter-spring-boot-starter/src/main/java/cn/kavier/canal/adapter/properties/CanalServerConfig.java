@@ -4,10 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = CanalServerProperties.PREFIX)
-public class CanalServerProperties {
+@ConfigurationProperties(prefix = CanalServerConfig.PREFIX)
+public class CanalServerConfig {
 
-    public static final String PREFIX = CanalAdapterProperties.PREFIX + ".server";
+    public static final String PREFIX = CanalAdapterConfig.PREFIX + ".server";
 
     private String host;
     private Integer port;

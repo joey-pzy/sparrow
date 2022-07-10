@@ -2,8 +2,6 @@ package cn.kavier.canal.adapter.filter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 
-import java.util.List;
-
 /**
  * 数据处理过程
  * data processing
@@ -12,7 +10,7 @@ import java.util.List;
  */
 public interface Filter {
 
-    void beforeProcess(List<CanalEntry.Entry> entryList);
+    void beforeProcess(CanalEntry.Entry entry);
 
     void process();
 
