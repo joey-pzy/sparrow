@@ -7,7 +7,7 @@ package cn.kavier.canal.adapter;
  */
 public interface Adapter {
 
-    void init();
+    void start();
 
     void etl();
 

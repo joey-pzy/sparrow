@@ -1,46 +1,46 @@
 package cn.kavier.canal.adapter;
 
 import cn.kavier.canal.adapter.exception.CanalAdapterRuntimeException;
-import cn.kavier.canal.adapter.filter.AbstractFilter;
+import cn.kavier.canal.adapter.filter.AbstractRowFilter;
 import cn.kavier.canal.adapter.properties.CanalAdapterConfig;
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public abstract class AbstractAdapter implements Adapter {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     protected CanalConnector connector;
-    protected CanalAdapterConfig adapterConfig;
-    protected ExecutorService executor;
+
     protected volatile boolean isConnected;
+
+    protected CanalAdapterConfig adapterConfig;
+
+    @SuppressWarnings("SpringJavaAutowiredMembersInspection")
+    @Autowired(required = false)
+    protected ExecutorService executor;
 
     public AbstractAdapter(CanalAdapterConfig adapter) {
         this.adapterConfig = adapter;
     }
 
     @Override
-    public void init() {
-        if (adapterConfig.getThreadPool().getEnable()) {
-            Integer poolSize = adapterConfig.getThreadPool().getMaxSize();
-            log.debug("创建线程池，大小={}", poolSize);
-            executor = Executors.newFixedThreadPool(poolSize, new ThreadPoolExecutorFactoryBean());
-            for (int i = 0; i < poolSize; i++) {
-                // todo 多线程使用自动配置进行加载，并且每个线程注入的对象是新的对象，单例对象会有线程安全问题
-                executor.execute(new Thread(this::etl));
-            }
-        } else {
-            new Thread(this::etl).start();
-        }
+    public void start() {
+        connector.connect();
+        connector.subscribe(adapterConfig.getSubscribe());
+        connector.rollback();
+        isConnected = true;
+
+        Thread adapterThread = new Thread(this::etl);
+        adapterThread.setName("canal-adapter-thread-main");
+        adapterThread.start();
     }
 
     @Override
@@ -48,36 +48,66 @@ public abstract class AbstractAdapter implements Adapter {
         Integer batchSizeConfig = adapterConfig.getBatchSize();
         int batchSize = batchSizeConfig == null ? 1000 : batchSizeConfig <= 0 ? 1000 : batchSizeConfig;
         while (isConnected) {
-            Message message = connector.getWithoutAck(batchSize); // 获取指定数量的数据
+            // todo 这里统一处理连接异常等情况
+            // todo 增加重试机制
+            Message message = connector.getWithoutAck(batchSize);
             long batchId = message.getId();
             int size = message.getEntries().size();
-            if (batchId == -1 || size == 0) {
-                log.debug("nothing to do, sleep 1000 ms");
-                connector.ack(batchId);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    log.debug("thread wait exception");
-                }
-            } else {
-                try {
-                    log.debug("message[batchId={},size={}]", batchId, size);
-                    for (CanalEntry.Entry entry : message.getEntries()) {
-                        String tableName = entry.getHeader().getTableName();
-                        Set<AbstractFilter> filters = adapterConfig.getAdapters().getFilters(tableName);
-                        filters.forEach(i -> i.filter(entry));
+
+            if (batchId != -1 && size != 0) {
+                log.debug("message[batchId={},size={}]", batchId, size);
+                if (executor != null) {
+                    // 多线程处理
+                    // todo 考虑怎么处理ask
+                    Thread thread = new Thread(() -> {
+                        log.debug("线程处理message，线程id={}", Thread.currentThread().getName());
+                        for (CanalEntry.Entry entry : message.getEntries()) {
+                            if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {
+                                continue;
+                            }
+                            String tableName = entry.getHeader().getTableName();
+                            Set<AbstractRowFilter> filters = adapterConfig.getEsAdapter().getFilters(tableName);
+                            filters.forEach(i -> i.filter(entry));
+                        }
+                        log.debug("消息消费完成，不ask，睡30000 ms");
+                        try {
+                            Thread.sleep(300000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    thread.setName("canal-adapter-thread-" + Math.random() * 10);
+                    executor.execute(thread);
+                } else {
+                    // 单线程处理
+                    try {
+                        for (CanalEntry.Entry entry : message.getEntries()) {
+                            if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {
+                                continue;
+                            }
+                            String tableName = entry.getHeader().getTableName();
+                            Set<AbstractRowFilter> filters = adapterConfig.getEsAdapter().getFilters(tableName);
+                            filters.forEach(i -> i.filter(entry));
+                        }
+                        connector.ack(batchId);
+                    } catch (CanalAdapterRuntimeException e) {
+                        connector.rollback(batchId);
                     }
-                    connector.ack(batchId);
-                } catch (CanalAdapterRuntimeException e) {
-                    connector.rollback(batchId);
-                    Thread.yield();
                 }
+            }
+
+            try {
+                log.debug("nothing to do, sleep 1000 ms");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                log.debug("thread wait exception");
             }
         }
     }
 
     @Override
     public void destroy() {
+        connector.unsubscribe();
         connector.disconnect();
         isConnected = false;
         if (executor != null) {

@@ -14,17 +14,13 @@ public class SimpleAdapter extends AbstractAdapter {
     }
 
     @Override
-    public void init() {
+    public void start() {
         CanalServerConfig serverConfig = adapterConfig.getServer();
         InetSocketAddress addr = new InetSocketAddress(serverConfig.getHost(), serverConfig.getPort());
         String destination = adapterConfig.getServer().getDestination();
         String username = adapterConfig.getServer().getUsername();
         String password = adapterConfig.getServer().getPassword();
         connector = CanalConnectors.newSingleConnector(addr, destination, username, password);
-        connector.connect();
-        connector.subscribe(adapterConfig.getSubscribe());
-        connector.rollback();
-        isConnected = true;
-        super.init();
+        super.start();
     }
 }

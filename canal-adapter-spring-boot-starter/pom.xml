@@ -12,6 +12,7 @@
     <groupId>cn.kavier</groupId>
     <artifactId>canal-adapter-spring-boot-starter</artifactId>
     <version>1.0.0</version>
+
     <name>canal-adapter-spring-boot-starter</name>
     <description>canal adapter springboot starter</description>
 

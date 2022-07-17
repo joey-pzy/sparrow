@@ -7,15 +7,15 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = CanalAdapterConfig.PREFIX)
 public class CanalAdapterConfig {
 
-    public static final String PREFIX = "canal.adapter";
+    public static final String PREFIX = "canal-adapter";
 
     private Boolean enable;
-    private String connector;
+    private String connectMode;
     private String subscribe;
     private Integer batchSize;
     private CanalServerConfig server;
     private AdapterThreadPoolConfig threadPool;
-    private CanalAdaptersConfig adapters;
+    private ESAdapterConfig esAdapter;
 
     public Boolean getEnable() {
         return enable;
@@ -25,12 +25,12 @@ public class CanalAdapterConfig {
         this.enable = enable;
     }
 
-    public String getConnector() {
-        return connector;
+    public String getConnectMode() {
+        return connectMode;
     }
 
-    public void setConnector(String connector) {
-        this.connector = connector;
+    public void setConnectMode(String connectMode) {
+        this.connectMode = connectMode;
     }
 
     public String getSubscribe() {
@@ -65,11 +65,11 @@ public class CanalAdapterConfig {
         this.threadPool = threadPool;
     }
 
-    public CanalAdaptersConfig getAdapters() {
-        return adapters;
+    public ESAdapterConfig getEsAdapter() {
+        return esAdapter;
     }
 
-    public void setAdapters(CanalAdaptersConfig adapters) {
-        this.adapters = adapters;
+    public void setEsAdapter(ESAdapterConfig esAdapter) {
+        this.esAdapter = esAdapter;
     }
 }

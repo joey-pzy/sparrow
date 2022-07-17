@@ -1,5 +1,5 @@
 package cn.kavier.canal.adapter.enums;
 
-public enum CanalConnectorEnum {
+public enum CanalConnectModeEnum {
     SIMPLE, CLUSTER
 }

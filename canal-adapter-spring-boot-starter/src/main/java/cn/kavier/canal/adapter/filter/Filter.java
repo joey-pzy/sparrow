@@ -10,10 +10,6 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
  */
 public interface Filter {
 
-    void beforeProcess(CanalEntry.Entry entry);
-
-    void process();
-
-    void afterProcess();
+    void filter(CanalEntry.Entry entry);
 
 }
