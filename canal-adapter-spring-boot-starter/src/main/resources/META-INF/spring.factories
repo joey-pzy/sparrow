@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-cn.kavier.canal.adapter.config.CanalAdapterAutoConfiguration
+cn.joey.canal.adapter.config.CanalAdapterAutoConfiguration

@@ -2,43 +2,77 @@ logging:
   level:
     cn.kavier.canal.adapter: debug
 
-
-# adapter 相关配置
-canal-adapter:
+canal:
   enable: true
-  connect-mode: simple # cluster
-  subscribe: .*\..*
-  batch-size: 1000
-  # todo 数据库相关配置，扩展增加这个配置处理，让adapter可以根据数据库创建instance，然后去消费这个instance
-  # srcDataSource:
   server:
     host: 106.55.100.113
     port: 11111
     username: canal
     password: canal
     destination: sparrow
-  # 线程池的最大线程数量（最好=？？？查阅资料，线程使用和cpu关系）
+  client:
+    connect-mode: simple
+    subscribe: .*\..*
+    batch-size: 10
+  adapter:
+    thread-pool:
+      enable: false
+      core-size: 4
+      max-size: 6
+      queue-capacity: 1
+    filters:
+      - key: test1
+        table-name: tb_canal_people,tb_canal_animal
+        filter:
+        es-index-name: xx
+        props:
+          xxx1: 1112
+          xxx2: 2221
+      - key: test2
+        table-name: tb_canal_animal
+        filter: af
+        es-index-name: index_canal_animal
+        props:
+          xxx1: 1112
+          xxx2: 2221
+
+
+
+
+canal-adapter:
+  enable: true
+  connect-mode: simple # cluster
+  subscribe: .*\..*
+  batch-size: 1
+  server:
+    host: 106.55.100.113
+    port: 11111
+    username: canal
+    password: canal
+    destination: sparrow
   thread-pool:
-    enable: true
-    max-size: 4
-  # todo 考虑将每一个同步实例（管道/1个业务需要），进行命名   ----- 官方命名为组，一个instance有多个组
-  # todo 这里只做一个instance对应一个程序，然后一个instance可以被多个组消费，（如，1es，2redis），组内又可以有多个组（如：1user业务，2权限业务）
-  # todo 这里只做一个instance 对应一个es组，然后es组内可以有多个组
+    enable: false
+    core-size: 4
+    max-size: 6
+    queue-capacity: 1
   es-adapter:
     filters:
-    - key: xx1
-      table-name: tb_canal_people
+    - key: test1
+      table-name: tb_canal_people,tb_canal_animal
       filter:
       es-index-name: xx
-      # todo 借鉴官方，将一些其他配置都放进props map<String, Object>
       props:
         xxx1: 1112
         xxx2: 2221
-    - key: xx2
-      table-name: tb_xx
-      filter:
+    - key: test2
+      table-name: tb_canal_animal
+      filter: af
+      es-index-name: index_canal_animal
+      props:
+        xxx1: 1112
+        xxx2: 2221
 
-# todo 下一步是如何将配置中的 表名->自定义filter类 进行映射
+# todo 下一步是考虑如何配置esindex，然后调整方法处理，将数据改动插入es
 
 
 
@@ -51,4 +85,6 @@ canal-adapter:
 
 
 # es相关配置
-
+spring:
+  elasticsearch:
+    uris: http://192.168.31.118:9200

@@ -1,0 +1,19 @@
+
+spring:
+  # kafka
+  kafka:
+    bootstrap-servers: 192.168.31.118:9092
+    producer:
+      acks: 0
+      retries: 0
+      client-id: 1
+    consumer:
+      enable-auto-commit: true
+      group-id: joey-group
+      client-id: joey-client
+    listener:
+      concurrency: 1
+      client-id: joey-listener
+  # es
+  elasticsearch:
+    uris: http://192.168.31.118:9200

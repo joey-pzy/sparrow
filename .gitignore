@@ -10,3 +10,5 @@
 # idea文件夹
 .idea
 *.iml
+
+/venv
