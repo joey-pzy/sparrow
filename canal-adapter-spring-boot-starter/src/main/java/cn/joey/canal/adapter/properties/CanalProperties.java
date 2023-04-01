@@ -1,6 +1,7 @@
 package cn.joey.canal.adapter.properties;
 
 
+import cn.joey.canal.adapter.enums.CanalConnectModeEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,7 @@ public class CanalProperties {
     @Component
     public static class Server {
         private String host;
+        private String zkServers;
         private Integer port;
         private String username;
         private String password;
@@ -99,19 +101,27 @@ public class CanalProperties {
         public void setDestination(String destination) {
             this.destination = destination;
         }
+
+        public String getZkServers() {
+            return zkServers;
+        }
+
+        public void setZkServers(String zkServices) {
+            this.zkServers = zkServices;
+        }
     }
 
     @Component
     public static class Client {
-        private String connectMode;
+        private CanalConnectModeEnum connectMode;
         private String subscribe;
-        private Integer batchSize;
+        private Integer batchSize = 1000;
 
-        public String getConnectMode() {
+        public CanalConnectModeEnum getConnectMode() {
             return connectMode;
         }
 
-        public void setConnectMode(String connectMode) {
+        public void setConnectMode(CanalConnectModeEnum connectMode) {
             this.connectMode = connectMode;
         }
 

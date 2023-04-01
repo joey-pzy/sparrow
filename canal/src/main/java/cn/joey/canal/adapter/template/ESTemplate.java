@@ -23,11 +23,10 @@ import java.util.Map;
 @Component
 public class ESTemplate {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ESTemplate.class);
 
     @Resource
     private ElasticsearchRestTemplate elasticsearchTemplate;
-
 
     public void insert(String id, String source, String index) {
         List<IndexQuery> list = new ArrayList<>(1);

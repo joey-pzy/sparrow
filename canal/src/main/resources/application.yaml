@@ -1,90 +1,40 @@
-logging:
-  level:
-    cn.kavier.canal.adapter: debug
 
-canal:
-  enable: true
-  server:
-    host: 106.55.100.113
-    port: 11111
-    username: canal
-    password: canal
-    destination: sparrow
-  client:
-    connect-mode: simple
-    subscribe: .*\..*
-    batch-size: 10
-  adapter:
-    thread-pool:
-      enable: false
-      core-size: 4
-      max-size: 6
-      queue-capacity: 1
-    filters:
-      - key: test1
-        table-name: tb_canal_people,tb_canal_animal
-        filter:
-        es-index-name: xx
-        props:
-          xxx1: 1112
-          xxx2: 2221
-      - key: test2
-        table-name: tb_canal_animal
-        filter: af
-        es-index-name: index_canal_animal
-        props:
-          xxx1: 1112
-          xxx2: 2221
-
-
-
-
-canal-adapter:
-  enable: true
-  connect-mode: simple # cluster
-  subscribe: .*\..*
-  batch-size: 1
-  server:
-    host: 106.55.100.113
-    port: 11111
-    username: canal
-    password: canal
-    destination: sparrow
-  thread-pool:
-    enable: false
-    core-size: 4
-    max-size: 6
-    queue-capacity: 1
-  es-adapter:
-    filters:
-    - key: test1
-      table-name: tb_canal_people,tb_canal_animal
-      filter:
-      es-index-name: xx
-      props:
-        xxx1: 1112
-        xxx2: 2221
-    - key: test2
-      table-name: tb_canal_animal
-      filter: af
-      es-index-name: index_canal_animal
-      props:
-        xxx1: 1112
-        xxx2: 2221
-
-# todo 下一步是考虑如何配置esindex，然后调整方法处理，将数据改动插入es
-
-
-
-
-# 动态代理配置，需要配置映射
-
-
-
-
-
-
-# es相关配置
 spring:
   elasticsearch:
     uris: http://192.168.31.118:9200
+    username:
+    password:
+  application:
+    name: canal-adapter-app
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://106.55.100.113:3306/sparrow
+    username: root
+    password: kavier
+
+logging:
+  level:
+    cn.joey.canal.adapter: debug
+
+
+canal:
+  enable: true
+  server: # canal server
+    host: 106.55.100.113
+    zk-servers: 106.55.100.113
+    port: 11111
+    username: canal
+    password: canal
+    destination: sparrow
+  client: # canal client
+    connect-mode: simple
+    subscribe: .*\..*
+    batch-size: 1024
+  adapter:
+    rollback-when-exception: false # 批次处理异常时回滚，false则跳过该异常批次，用户需要自己实现额外的数据补偿机制
+    thread-pool:
+      enable: true
+      core-size: 4
+      max-size: 6
+      queue-capacity: 1
+      keep-alive-time: 10000

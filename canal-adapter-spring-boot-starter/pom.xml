@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.1</version>
+        <version>2.7.10</version>
         <relativePath/>
     </parent>
 
-    <groupId>cn.kavier</groupId>
+    <groupId>cn.joey</groupId>
     <artifactId>canal-adapter-spring-boot-starter</artifactId>
     <version>1.0.0</version>
 
@@ -18,31 +18,30 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <canal-client.version>1.1.6</canal-client.version>
     </properties>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <!--canal client 依赖-->
-        <dependency>
-            <groupId>com.alibaba.otter</groupId>
-            <artifactId>canal.example</artifactId>
-            <version>1.1.6</version>
-        </dependency>
-
-        <!--es操作依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.client</artifactId>
+            <version>${canal-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.protocol</artifactId>
+            <version>${canal-client.version}</version>
         </dependency>
     </dependencies>
 

@@ -3,21 +3,18 @@ package cn.joey.canal.adapter;
 import cn.joey.canal.adapter.properties.CanalProperties;
 import com.alibaba.otter.canal.client.CanalConnectors;
 
-import java.net.InetSocketAddress;
+public class ClusterAdapter extends AbstractAdapter {
 
-public class SimpleAdapter extends AbstractAdapter {
-
-    public SimpleAdapter(CanalProperties canalProperties, HandlerMapping handlerMapping) {
+    public ClusterAdapter(CanalProperties canalProperties, HandlerMapping handlerMapping) {
         super(canalProperties, handlerMapping);
     }
 
     @Override
     public void start() {
-        InetSocketAddress addr = new InetSocketAddress(serverProperties.getHost(), serverProperties.getPort());
         String destination = serverProperties.getDestination();
         String username = serverProperties.getUsername();
         String password = serverProperties.getPassword();
-        super.connector = CanalConnectors.newSingleConnector(addr, destination, username, password);
+        super.connector = CanalConnectors.newClusterConnector(serverProperties.getZkServers(), destination, username, password);
         super.start();
     }
 }

@@ -1,29 +1,23 @@
 package cn.joey.canal.adapter;
 
 import cn.joey.canal.adapter.exception.AdapterRunningStatusException;
-import cn.joey.canal.adapter.exception.CanalAdapterRuntimeException;
-import cn.joey.canal.adapter.filter.AbstractRowFilter;
-import cn.joey.canal.adapter.loader.FilterLoader;
+import cn.joey.canal.adapter.handler.EntriesHandler;
 import cn.joey.canal.adapter.properties.CanalProperties;
 import com.alibaba.otter.canal.client.CanalConnector;
-import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 public abstract class AbstractAdapter implements Adapter {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected Thread adapterThread = null;
 
-    protected Thread.UncaughtExceptionHandler handler = (t, e) -> log.error("数据同步发生未知异常", e);
+    protected Thread.UncaughtExceptionHandler handler = (t, e) -> logger.error("数据消费线程未处理异常", e);
 
     protected CanalConnector connector;
 
@@ -33,16 +27,17 @@ public abstract class AbstractAdapter implements Adapter {
 
     protected CanalProperties.Client clientProperties;
 
-    @SuppressWarnings("SpringJavaAutowiredMembersInspection")
-    @Autowired(required = false)
-    protected ExecutorService executor;
+    protected boolean rollbackWhenException;
 
-    @Resource
-    private FilterLoader filterLoader;
+    private final HandlerMapping handlerMapping;
 
-    public AbstractAdapter(CanalProperties canalProperties) {
+    private Executor executor;
+
+    protected AbstractAdapter(CanalProperties canalProperties, HandlerMapping handlerMapping) {
         this.clientProperties = canalProperties.getClient();
         this.serverProperties = canalProperties.getServer();
+        this.handlerMapping = handlerMapping;
+        this.rollbackWhenException = canalProperties.getAdapter().getRollbackWhenException();
     }
 
     @Override
@@ -50,80 +45,72 @@ public abstract class AbstractAdapter implements Adapter {
         if (running) {
             throw new AdapterRunningStatusException("is running yet");
         }
-        if (null == connector) {
-            throw new CanalAdapterRuntimeException("connector is null");
-        }
-        adapterThread = new Thread(this::process);
-        adapterThread.setName("canal-adapter-thread-main");
+        adapterThread = new Thread(this::process, "canal-adapter-thread-main");
         adapterThread.setUncaughtExceptionHandler(handler);
         running = true;
         adapterThread.start();
+        logger.info("canal adapter started ...");
+    }
+
+    private void connect() {
+        boolean connectSuccessfully = false;
+        do {
+            try {
+                connector.connect();
+                connector.subscribe(clientProperties.getSubscribe());
+                connector.rollback();
+                connectSuccessfully = true;
+            } catch (CanalClientException var1) {
+                logger.error("Adapter 尝试连接 canal server 发生异常，请检查网络是否顺畅，或检查 canal server 是否启动", var1);
+                try {
+                    Thread.sleep(10000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        } while (running && !connectSuccessfully);
     }
 
     @Override
     public void process() {
         Integer batchSizeConfig = clientProperties.getBatchSize();
-        int batchSize = batchSizeConfig == null ? 1000 : batchSizeConfig <= 0 ? 1000 : batchSizeConfig;
-
-        if (running) {
-            int retry = 3;
-            boolean connectSuccessfully = false;
-            do {
-                try {
-                    connector.connect();
-                    connector.subscribe(clientProperties.getSubscribe());
-                    connector.rollback();
-                    connectSuccessfully = true;
-                } catch (CanalClientException var1) {
-                    log.error("Adapter 尝试连接 canal server 发生异常，10s 后将重试连接，请检查网络是否顺畅，或检查 canal server 是否启动", var1);
-                    try {
-                        // 连接异常，等待10s后继续重试
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    retry--;
-                }
-            } while (!connectSuccessfully && retry > 0);
-
-            if (!connectSuccessfully) {
-                throw new CanalAdapterRuntimeException("连接 canal server 失败");
-            }
-        }
-
+        int batchSize = batchSizeConfig <= 0 ? 1000 : batchSizeConfig;
+        connect();
         try {
+            EntriesHandler entriesHandler = new EntriesHandler(handlerMapping);
             while (running) {
-                Message message = connector.getWithoutAck(batchSize);
-                long batchId = message.getId();
-                int size = message.getEntries().size();
+                long batchId = -1;
+                try {
+                    Message message = connector.getWithoutAck(batchSize);
+                    batchId = message.getId();
+                    int size = message.getEntries().size();
 
-                // todo 遇见批次异常，是直接抛出异常中断整个同步，还是跳过？
-                if (batchId != -1 && size != 0) {
-                    log.debug("message[batchId={},size={}]", batchId, size);
-                    // todo 在这里不进行循环，每一批次都交给一个新线程执行，且后续的每次执行都要创建新的数据对象，让其线程私有，这样保证线程安全
-                    for (CanalEntry.Entry entry : message.getEntries()) {
-                        if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {
-                            continue;
+                    if (batchId != -1 && size != 0) {
+                        logger.debug("message[batchId={},size={}]", batchId, size);
+                        if (this.executor != null) {
+                            executor.execute(() -> entriesHandler.handle(message.getEntries()));
+                        } else {
+                            entriesHandler.handle(message.getEntries());
                         }
-                        // todo 这里考虑先使用 handle 处理数据，然后才是自定义 filter/conversion 进行数据过滤或者格式转换
-                        Set<AbstractRowFilter> filters = filterLoader.loadFilters(entry.getHeader().getTableName());
-                        filters.forEach(i -> i.filter(entry));
+                        connector.ack(batchId);
                     }
-                    // todo 异步的情况需要获取到线程执行结果，才进行ask，线程异常则根据【配置】设定直接阻断还是跳过
-                    connector.ack(batchId);
-                } else {
-                    log.info("nothing to do...wait 3000 ms");
-                    Thread.sleep(3000);
-                }
 
+                } catch (Exception e) {
+                    if (rollbackWhenException) {
+                        connector.rollback();
+                        logger.info("数据消费异常，已回滚，batchId={}", batchId, e);
+                        // 当异常需要回滚时，直接退出数据处理，因为继续执行也是一直异常
+                        break;
+                    } else {
+                        // todo 最好在这里记录下所有异常数据，从而提供给数据补偿机制
+                        logger.info("数据消费异常，已跳过该批次ID，batchId={}", batchId, e);
+                    }
+                }
+                Thread.yield();
             }
-        } catch (Throwable e) {
-            log.error("数据同步异常", e);
-            connector.rollback();
         } finally {
-            //connector.unsubscribe();
             connector.disconnect();
-            log.info("已断开与 canal server 的连接");
+            logger.info("已断开与 canal server 的连接");
         }
     }
 
@@ -133,9 +120,14 @@ public abstract class AbstractAdapter implements Adapter {
             return;
         }
         running = false;
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdown();
-        }
-        log.info("canal adapter destroy");
+        logger.info("canal adapter stopped");
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 }

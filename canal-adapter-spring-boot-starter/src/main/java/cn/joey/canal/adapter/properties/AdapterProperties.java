@@ -14,6 +14,8 @@ public class AdapterProperties {
 
     public static final String PREFIX = CanalProperties.PREFIX + ".adapter";
 
+    private Boolean rollbackWhenException = true;
+
     private ThreadPool threadPool;
 
     private List<FilterConfig> filters;
@@ -34,6 +36,14 @@ public class AdapterProperties {
         this.threadPool = threadPool;
     }
 
+    public Boolean getRollbackWhenException() {
+        return rollbackWhenException;
+    }
+
+    public void setRollbackWhenException(Boolean rollbackWhenException) {
+        this.rollbackWhenException = rollbackWhenException;
+    }
+
     /**
      * 工作线程池配置
      */
@@ -43,6 +53,7 @@ public class AdapterProperties {
         private Integer coreSize = 1;
         private Integer maxSize = 1;
         private Integer queueCapacity = 10;
+        private Integer keepAliveTime = 30000;
 
         public Boolean getEnable() {
             return enable;
@@ -74,6 +85,14 @@ public class AdapterProperties {
 
         public void setQueueCapacity(Integer queueCapacity) {
             this.queueCapacity = queueCapacity;
+        }
+
+        public Integer getKeepAliveTime() {
+            return keepAliveTime;
+        }
+
+        public void setKeepAliveTime(Integer keepAliveTime) {
+            this.keepAliveTime = keepAliveTime;
         }
 
         @Override

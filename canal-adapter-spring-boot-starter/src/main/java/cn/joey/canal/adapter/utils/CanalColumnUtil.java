@@ -7,10 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author pzy 2022-07-17
+ * 数据消费列处理工具类
+ *
+ * @author joey 2022-07-17
  * @since 1.0.0
  */
 public class CanalColumnUtil {
+
+    private CanalColumnUtil() {
+    }
 
     public static Map<String, Object> toColumnMap(List<CanalEntry.Column> columns) {
         return toColumnMap(columns, false);
