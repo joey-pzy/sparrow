@@ -123,10 +123,6 @@ public abstract class AbstractAdapter implements Adapter {
         logger.info("canal adapter stopped");
     }
 
-    public Executor getExecutor() {
-        return executor;
-    }
-
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
