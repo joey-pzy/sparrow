@@ -11,7 +11,7 @@
 
     <groupId>cn.joey</groupId>
     <artifactId>canal-adapter-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>${canal-client.version}</version>
 
     <name>canal-adapter-spring-boot-starter</name>
     <description>canal adapter springboot starter</description>
