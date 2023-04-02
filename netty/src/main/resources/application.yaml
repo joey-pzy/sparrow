@@ -1,0 +1,6 @@
+server:
+  port: 4433
+
+spring:
+  application:
+    name: test-webflux
