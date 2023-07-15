@@ -1,11 +1,11 @@
 
 spring:
+  application:
+    name: canal-adapter-app
   elasticsearch:
     uris: http://192.168.31.118:9200
     username:
     password:
-  application:
-    name: canal-adapter-app
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://106.55.100.113:3306/sparrow

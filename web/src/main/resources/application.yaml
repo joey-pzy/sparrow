@@ -1,0 +1,20 @@
+
+server:
+  port: 4433
+
+spring:
+  application:
+    name: web-test-app
+  datasource:
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://106.55.100.113:3306/sparrow
+      username: root
+      password: kavier
+      maximum-pool-size: 10
+  other-datasource:
+    - name: slave
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://106.55.100.113:3306/other_sparrow
+      username: root
+      password: kavier
