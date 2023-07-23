@@ -24,6 +24,7 @@ public class DataSourceConfig {
         return DataSourceBuilder.create().build();
     }
 
+    // todo 增加配置数据源的关闭钩子、 增加动态刷新实现
     @Bean("otherDatasource")
     public Map<String, DataSource> otherDataSource(OtherDatasourceProperties otherDatasourceProperties) {
         List<DataSourceProperties> properties = otherDatasourceProperties.getOtherDatasource();

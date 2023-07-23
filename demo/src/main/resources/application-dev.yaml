@@ -1,19 +1,25 @@
 
 spring:
+
   # kafka
   kafka:
-    bootstrap-servers: 192.168.31.118:9092
+    bootstrap-servers: 10.168.1.131:9092
+    client-id: joey-test-kafka
     producer:
-      acks: 0
+      acks: 1
       retries: 0
-      client-id: 1
     consumer:
-      enable-auto-commit: true
-      group-id: joey-group
-      client-id: joey-client
-    listener:
-      concurrency: 1
-      client-id: joey-listener
+      enable-auto-commit: false
+
   # es
   elasticsearch:
-    uris: http://192.168.31.118:9200
+    uris: http://10.168.1.131:9200
+
+
+  datasource:
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://106.55.100.113:3306/sparrow
+      username: root
+      password: kavier
+      maximum-pool-size: 10

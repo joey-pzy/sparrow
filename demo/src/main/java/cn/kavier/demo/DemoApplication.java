@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @EnableKafka
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "cn.kavier")
 public class DemoApplication {
 
     private static final Logger log = LoggerFactory.getLogger(DemoApplication.class);

@@ -4,3 +4,5 @@ spring:
     active: dev
   application:
     name: demo
+server:
+  port: 4433
